@@ -4,6 +4,9 @@
 
 All reverse engineering insights were sourced from [Shell Motorsport Bluetooth Remote Control](https://gist.github.com/scrool/e79d6a4cb50c26499746f4fe473b3768), an excellent cheat sheet for this project.
 
+## run
+```make start```
+
 ## Controller Mapping
 
 ### DualShock Mapping
