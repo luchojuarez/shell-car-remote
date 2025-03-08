@@ -26,16 +26,20 @@ All reverse engineering insights were sourced from [Shell Motorsport Bluetooth R
 
 ## implement other input?
 in `input/input.go` you can find
-```go type Input interface {  
- Listen() *chan Command}  
-```  
-to implement other input device you need to implement your input device interface.  
-this implementation will send into a channel all inputs to `chan Command`  
+```go 
+type Input interface {
+	Listen() *chan Command
+}
+```
+to implement other input device you need to implement your input device interface.
+this implementation will send into a channel all inputs to `chan Command`
 where
-```go  
-type Command struct {  
- Key   KeyCommand Value ValueCommand}  
-```  
+```go
+type Command struct {
+	Key   KeyCommand
+	Value ValueCommand
+}
+```
 And use this `Command chan` as a parameter to build your car.
 ```go  
 xboxController := input.NewXBoxInput(controller)  
