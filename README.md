@@ -48,4 +48,7 @@ car, err := service.NewQCar(*cipher, BLEcar.Devices(), ch)
 ```
 ## Todo list
 + Implement keyboard again.
-+ Read car battery status from characteristic. (feature well documented in cheatsheet 😏)
++ Add callback to reconnect.
++ improve battery log (add with car battery percentage are login)
+## Changelog
++ 2025-03-08: Add battery percentage read feature.

@@ -1,8 +1,10 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"github.com/shell-car-remote/service/scanner"
+	"strconv"
 	"time"
 
 	"github.com/shell-car-remote/input"
@@ -10,14 +12,16 @@ import (
 	"tinygo.org/x/bluetooth"
 )
 
-var characteristicDrive = "d44bc439-abfd-45a2-b575-925416129600"
+var driveCharacteristic = "d44bc439-abfd-45a2-b575-925416129600"
+var batteryCharacteristic = "d44bc439-abfd-45a2-b575-925416129601"
 
 type QCAR struct {
-	cipher              AesEcbCipher
-	ble                 *bluetooth.Device
-	driveCharacteristic *bluetooth.DeviceCharacteristic
-	controller          *chan input.Command
-	carStatus           *models.Message
+	cipher                AesEcbCipher
+	ble                   *bluetooth.Device
+	driveCharacteristic   *bluetooth.DeviceCharacteristic
+	batteryCharacteristic *bluetooth.DeviceCharacteristic
+	controller            *chan input.Command
+	carStatus             *models.Message
 	//TODO add battery characteristic
 }
 
@@ -37,7 +41,14 @@ func (car *QCAR) Reconnect() error {
 }
 
 func GetDriveCharacteristic(ble *bluetooth.Device) (*bluetooth.DeviceCharacteristic, error) {
-	characteristic, err := scanner.GetCharacteristicByUUID(*ble, characteristicDrive)
+	characteristic, err := scanner.GetCharacteristicByUUID(*ble, driveCharacteristic)
+	if err != nil {
+		return nil, fmt.Errorf("connect error: %s", err.Error())
+	}
+	return characteristic, nil
+}
+func GetBatteryCharacteristic(ble *bluetooth.Device) (*bluetooth.DeviceCharacteristic, error) {
+	characteristic, err := scanner.GetCharacteristicByUUID(*ble, batteryCharacteristic)
 	if err != nil {
 		return nil, fmt.Errorf("connect error: %s", err.Error())
 	}
@@ -55,17 +66,23 @@ func NewQCar(
 	if err != nil {
 		return nil, err
 	}
+	batteryCharacteristic, err := GetBatteryCharacteristic(device)
+	if err != nil {
+		return nil, err
+	}
 	idle := models.NewMessage()
 
 	// Create and return the QCAR instance
 	instance := &QCAR{
-		cipher:              cipher,
-		ble:                 device,
-		driveCharacteristic: driveCharacteristic,
-		controller:          controller,
-		carStatus:           &idle, // new idle status
+		cipher:                cipher,
+		ble:                   device,
+		driveCharacteristic:   driveCharacteristic,
+		batteryCharacteristic: batteryCharacteristic,
+		controller:            controller,
+		carStatus:             &idle, // new idle status
 	}
 	instance.ListenController()
+	instance.EnableBatteryNotification()
 
 	return instance, nil
 }
@@ -76,13 +93,31 @@ func (car *QCAR) ListenController() {
 		listenController(ch, output)
 	}(car.controller, car.carStatus)
 }
+func (car *QCAR) EnableBatteryNotification() {
+	e := car.batteryCharacteristic.EnableNotifications(
+		func(buf []byte) {
+			message, err := car.cipher.Decrypt(buf)
+			if err != nil {
+				fmt.Printf("cant decrypt battery status message [%x]: %s\n", buf, err.Error())
+			} else {
+				counterStr := message[0]
+
+				batteryPercentage, _ := strconv.ParseUint(fmt.Sprintf("%x", message[4]), 16, 16)
+				fmt.Printf("[%d] message battery level %d%% \n", counterStr, batteryPercentage)
+			}
+		},
+	)
+	if e != nil {
+		panic(errors.New("enable battery notification error: " + e.Error()))
+	}
+}
 
 func listenController(inputChannel *chan input.Command, output *models.Message) {
 	for {
 		select {
 
 		case event, ok := <-*inputChannel:
-			fmt.Printf("Received: %+v\n", event)
+			//fmt.Printf("Received: %+v\n", event)
 			if event.Value == input.Hold {
 				break
 			}

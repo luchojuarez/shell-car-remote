@@ -2,7 +2,6 @@ package scanner
 
 import (
 	"fmt"
-
 	"tinygo.org/x/bluetooth"
 )
 
@@ -24,7 +23,6 @@ func GetCharacteristicByUUID(device bluetooth.Device, characteristicUUID string)
 
 		for _, char := range characteristics {
 			if char.UUID().String() == characteristicUUID {
-				fmt.Printf("Found target characteristic: %s\n", char.UUID().String())
 				targetChar = &char
 				break
 			}

@@ -63,9 +63,11 @@ func main() {
 		if err != nil {
 			panic(fmt.Sprintf("error building car '%s'", err.Error()))
 		}
-		go car.StartTransmission()
+		car.EnableBatteryNotification()
 
 		BLEcar.Paired() //mark as paired.
+
+		go car.StartTransmission()
 
 	}
 
