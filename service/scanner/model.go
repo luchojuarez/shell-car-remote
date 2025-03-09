@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"fmt"
+	"sync"
 	"tinygo.org/x/bluetooth"
 )
 
@@ -23,9 +24,12 @@ func (r Result) String() string {
 type BLE struct {
 	adapter      *bluetooth.Adapter
 	foundDevices []*Result
+	mu           sync.Mutex
 }
 
 func (ble *BLE) UnpairedDevices() ([]*Result, error) {
+	ble.mu.Lock()
+	defer ble.mu.Unlock()
 	var result []*Result
 	for _, d := range ble.foundDevices {
 		if !d.paired {
@@ -35,6 +39,8 @@ func (ble *BLE) UnpairedDevices() ([]*Result, error) {
 	return result, nil
 }
 func (ble *BLE) Device(name string) *Result {
+	ble.mu.Lock()
+	defer ble.mu.Unlock()
 	for _, d := range ble.foundDevices {
 		if d.name == name {
 			return d

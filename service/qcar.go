@@ -181,12 +181,12 @@ func (car *QCAR) StartTransmission() {
 
 func (car *QCAR) SendMessage(message models.Message) error {
 	initTime := time.Now()
-	encriptedMsg, err := car.cipher.Encrypt(message.Payload())
+	encryptedMsg, err := car.cipher.Encrypt(message.Payload())
 	if err != nil {
 		return fmt.Errorf("error while cipher message '%+v'", err)
 	}
 
-	_, err = car.driveCharacteristic.WriteWithoutResponse(encriptedMsg)
+	_, err = car.driveCharacteristic.WriteWithoutResponse(encryptedMsg)
 	if err != nil {
 		switch err.Error() {
 		case "Not connected":
