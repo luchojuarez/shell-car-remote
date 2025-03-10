@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/shell-car-remote/service/scanner"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/shell-car-remote/input"
@@ -20,9 +21,9 @@ type QCAR struct {
 	ble                   *bluetooth.Device
 	driveCharacteristic   *bluetooth.DeviceCharacteristic
 	batteryCharacteristic *bluetooth.DeviceCharacteristic
+	adapter               *scanner.BLE
 	controller            *chan input.Command
 	carStatus             *models.Message
-	//TODO add battery characteristic
 }
 
 func (car *QCAR) Disconnect() error {
@@ -30,14 +31,17 @@ func (car *QCAR) Disconnect() error {
 	time.Sleep(100 * time.Millisecond)
 	return e
 }
-func (car *QCAR) Reconnect() error {
-	driveCharacteristic, err := GetDriveCharacteristic(car.ble)
+func (car *QCAR) Reconnect() (error, bool) {
+	device, err := car.adapter.Reconnect(car.ble.Address)
 	if err != nil {
-		return err
+		if strings.Contains(err.Error(), "Operation already in progress") {
+			return nil, false
+		}
+		panic(fmt.Sprintf("error '%s'", err.Error()))
 	}
-	car.driveCharacteristic = driveCharacteristic
+	car.ble = &device
 
-	return nil
+	return nil, true
 }
 
 func GetDriveCharacteristic(ble *bluetooth.Device) (*bluetooth.DeviceCharacteristic, error) {
@@ -60,6 +64,7 @@ func NewQCar(
 	cipher AesEcbCipher,
 	device *bluetooth.Device,
 	controller *chan input.Command,
+	adapter *scanner.BLE,
 
 ) (*QCAR, error) {
 	driveCharacteristic, err := GetDriveCharacteristic(device)
@@ -78,6 +83,7 @@ func NewQCar(
 		ble:                   device,
 		driveCharacteristic:   driveCharacteristic,
 		batteryCharacteristic: batteryCharacteristic,
+		adapter:               adapter,
 		controller:            controller,
 		carStatus:             &idle, // new idle status
 	}
@@ -190,12 +196,15 @@ func (car *QCAR) SendMessage(message models.Message) error {
 	if err != nil {
 		switch err.Error() {
 		case "Not connected":
-			fmt.Printf("reconnect... ")
-			err := car.Reconnect()
+			err, ok := car.Reconnect()
+
 			if err != nil {
 				return fmt.Errorf("reconnect error '%s': %s", car.ble.Address, err.Error())
 			}
-			fmt.Printf("reconnected\n")
+			if !ok {
+				fmt.Printf("reconnecting...")
+				return nil
+			}
 		case "In Progress":
 			time.Sleep(50 * time.Microsecond)
 		default:

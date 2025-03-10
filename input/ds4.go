@@ -135,7 +135,7 @@ func listenDS4(ctx context.Context, ds DS4Input) error {
 		keyevent, ok := e.(*ps4.KeyEvent)
 		if ok {
 			switch keyevent.Button {
-			//ligth
+			//Headlights.
 			case ps4.Playstation:
 				if keyevent.State == ps4.KeyDown {
 					*ds.pressedKeys <- Command{Key: Headlights, Value: Press}

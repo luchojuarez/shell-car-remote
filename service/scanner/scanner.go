@@ -82,3 +82,7 @@ func (ble *BLE) scan(ctx context.Context, newDevices chan *Result) error {
 		}
 	}
 }
+
+func (ble *BLE) Reconnect(address bluetooth.Address) (bluetooth.Device, error) {
+	return ble.adapter.Connect(address, bleConnectionParams)
+}

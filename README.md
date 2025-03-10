@@ -48,7 +48,7 @@ car, err := service.NewQCar(*cipher, BLEcar.Devices(), ch)
 ```
 ## Todo list
 + Implement keyboard again.
-+ Add callback to reconnect.
 + improve battery log (add with car battery percentage are login)
 ## Changelog
 + 2025-03-08: Add battery percentage read feature.
++ 2025-03-09: Add reconnect feature.

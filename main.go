@@ -58,7 +58,7 @@ func main() {
 		ds := input.NewDS4Input(controller)
 		ch := ds.Listen()
 
-		car, err := service.NewQCar(*cipher, BLEcar.Devices(), ch)
+		car, err := service.NewQCar(*cipher, BLEcar.Devices(), ch, bleScanner)
 
 		if err != nil {
 			panic(fmt.Sprintf("error building car '%s'", err.Error()))
@@ -80,7 +80,7 @@ func main() {
 		ch := keyboard.Listen()
 		BLE := BLECars[0]
 
-		car, err := service.NewQCar(*cipher, BLE.Devices(), ch)
+		car, err := service.NewQCar(*cipher, BLE.Devices(), ch, bleScanner)
 		if err != nil {
 			panic(fmt.Sprintf("error building car '%s'", err.Error()))
 		}
