@@ -5,9 +5,10 @@ package input
 import (
 	"context"
 	"fmt"
+	"log"
+
 	evdev "github.com/gvalkov/golang-evdev"
 	"github.com/mrasband/ps4"
-	"log"
 )
 
 const (
@@ -130,7 +131,7 @@ func listenDS4(ctx context.Context, ds DS4Input) error {
 			}
 
 		} else {
-			fmt.Printf("%T, %+v\n", e, e)
+			//fmt.Printf("%T, %+v\n", e, e)
 		}
 
 		//map analog inputs

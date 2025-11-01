@@ -7,7 +7,18 @@ import (
 )
 
 type Cipher interface {
-	Encrypt(input []byte) []byte
+	Encrypt(input []byte) ([]byte, error)
+	Decrypt(input []byte) ([]byte, error)
+}
+
+type NoopCipher struct{}
+
+func (noop NoopCipher) Encrypt(input []byte) ([]byte, error) {
+	return input, nil
+}
+
+func (noop NoopCipher) Decrypt(input []byte) ([]byte, error) {
+	return input, nil
 }
 
 type AesEcbCipher struct {

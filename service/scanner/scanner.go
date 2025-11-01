@@ -43,9 +43,10 @@ func (ble *BLE) Scan(ctx context.Context) chan *Result {
 func (ble *BLE) scan(ctx context.Context, newDevices chan *Result) error {
 	go func(ctx context.Context, newDevices chan *Result, bleScanner *BLE) {
 		err := bleScanner.adapter.Scan(func(adapter *bluetooth.Adapter, resutl bluetooth.ScanResult) {
-			if strings.HasPrefix(resutl.LocalName(), "QCAR") {
-				if bleScanner.Device(resutl.LocalName()) != nil {
-					log.Printf("already found device %s", resutl.LocalName())
+			localName := resutl.LocalName()
+			if strings.HasPrefix(localName, "QCAR") || localName == "SL-SF90 Spider" {
+				if bleScanner.Device(localName) != nil {
+					log.Printf("already found device %s", localName)
 				} else {
 					device, err := adapter.Connect(resutl.Address, bleConnectionParams)
 
@@ -55,10 +56,10 @@ func (ble *BLE) scan(ctx context.Context, newDevices chan *Result) error {
 					}
 
 					r := &Result{
-						name:       fmt.Sprintf("CAR %d", len(ble.foundDevices)+1),
-						scanResult: resutl,
-						device:     &device,
-						paired:     false,
+						Name:       fmt.Sprintf("CAR %d", len(ble.foundDevices)+1),
+						ScanResult: resutl,
+						Device:     &device,
+						Paired:     false,
 					}
 
 					ble.foundDevices = append(ble.foundDevices, r)

@@ -3,22 +3,24 @@ package scanner
 import (
 	"fmt"
 	"sync"
+
 	"tinygo.org/x/bluetooth"
 )
 
 type Result struct {
-	name       string
-	scanResult bluetooth.ScanResult
-	device     *bluetooth.Device
-	paired     bool
+	Name       string
+	ScanResult bluetooth.ScanResult
+	Device     *bluetooth.Device
+	Paired     bool
+	CarBrand   int
 }
 
 func (r Result) String() string {
 	status := "unpaired"
-	if r.paired {
+	if r.Paired {
 		status = "paired"
 	}
-	return fmt.Sprintf("%s (%s/%s) %s", r.name, r.scanResult.LocalName(), r.device.Address.String(), status)
+	return fmt.Sprintf("%s (%s/%s) %s", r.Name, r.ScanResult.LocalName(), r.Device.Address.String(), status)
 }
 
 type BLE struct {
@@ -32,7 +34,7 @@ func (ble *BLE) UnpairedDevices() ([]*Result, error) {
 	defer ble.mu.Unlock()
 	var result []*Result
 	for _, d := range ble.foundDevices {
-		if !d.paired {
+		if !d.Paired {
 			result = append(result, d)
 		}
 	}
@@ -42,7 +44,7 @@ func (ble *BLE) Device(name string) *Result {
 	ble.mu.Lock()
 	defer ble.mu.Unlock()
 	for _, d := range ble.foundDevices {
-		if d.name == name {
+		if d.Name == name {
 			return d
 		}
 	}
@@ -50,9 +52,5 @@ func (ble *BLE) Device(name string) *Result {
 }
 
 func (r *Result) Devices() *bluetooth.Device {
-	return r.device
-}
-
-func (r *Result) Paired() {
-	r.paired = true
+	return r.Device
 }

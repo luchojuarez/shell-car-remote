@@ -1,4 +1,4 @@
-package models
+package car
 
 import (
 	"testing"
@@ -14,12 +14,12 @@ func TestNewMessage(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "ddefault values",
+			name: "default values",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			message := NewMessage()
+			message := NewBrandMessage()
 			assert.Equal(t, len(message.Payload()), 16)
 
 			assert.Equal(t, message.Human(), "[move:none, steeringwheel:none, speed:normal]")

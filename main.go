@@ -3,19 +3,22 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/shell-car-remote/input"
-	"github.com/shell-car-remote/service"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	carPkg "github.com/shell-car-remote/car"
+	"github.com/shell-car-remote/input"
+	"github.com/shell-car-remote/service/scanner"
 )
 
 func main() {
-	container := NewContainer()
-	cipher := container.GetCipher()
-	bleScanner := container.GetBLE()
+	bleScanner, err := scanner.NewBLE()
+	if err != nil {
+		panic(err)
+	}
 
 	ctx := context.Background()
 
@@ -58,16 +61,14 @@ func main() {
 		ds := input.NewDS4Input(controller)
 		ch := ds.Listen()
 
-		car, err := service.NewQCar(*cipher, BLEcar.Devices(), ch, bleScanner)
+		car, err := carPkg.NewCar(BLEcar, ch, bleScanner)
 
 		if err != nil {
 			panic(fmt.Sprintf("error building car '%s'", err.Error()))
 		}
 
-		BLEcar.Paired() //mark as paired.
-
-		go car.StartTransmission()
-
+		BLEcar.Paired = true //mark as paired.
+		car.Start()
 	}
 
 	// check for unpaired cars.
@@ -76,16 +77,18 @@ func main() {
 		panic(err)
 	}
 	if len(BLECars) != 0 {
+		fmt.Println("setting keyboard input")
 		keyboard := input.NewKeyboardInput()
 		ch := keyboard.Listen()
 		BLE := BLECars[0]
 
-		car, err := service.NewQCar(*cipher, BLE.Devices(), ch, bleScanner)
+		car, err := carPkg.NewCar(BLE, ch, bleScanner)
+
 		if err != nil {
 			panic(fmt.Sprintf("error building car '%s'", err.Error()))
 		}
-		go car.StartTransmission()
-		BLE.Paired()
+		car.Start()
+		BLE.Paired = true
 	}
 
 	BLECars, err = bleScanner.UnpairedDevices()

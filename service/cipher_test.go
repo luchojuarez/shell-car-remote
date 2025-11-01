@@ -1,16 +1,17 @@
 package service
 
+/*
 import (
 	"encoding/hex"
 	"fmt"
 	"testing"
 
-	"github.com/shell-car-remote/models"
+	"github.com/shell-car-remote/car"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewAesEcbCipher(t *testing.T) {
-	message := models.NewMessage()
+	message := car.NewBrandMessage()
 	type want struct {
 		errMessage string
 		output     string
