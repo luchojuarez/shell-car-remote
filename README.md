@@ -52,3 +52,4 @@ car, err := service.NewQCar(*cipher, BLEcar.Devices(), ch)
 ## Changelog
 + 2025-03-08: Add battery percentage read feature.
 + 2025-03-09: Add reconnect feature.
++ 2025-11-01: Add Compatibility with Bburago cars.
