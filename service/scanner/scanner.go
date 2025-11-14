@@ -45,10 +45,13 @@ func (ble *BLE) scan(ctx context.Context, newDevices chan *Result) error {
 		err := bleScanner.adapter.Scan(func(adapter *bluetooth.Adapter, resutl bluetooth.ScanResult) {
 			localName := resutl.LocalName()
 			if strings.HasPrefix(localName, "QCAR") || localName == "SL-SF90 Spider" {
+				bleScanner.mu.Lock()
+				defer bleScanner.mu.Unlock()
 				if bleScanner.Device(localName) != nil {
 					log.Printf("already found device %s", localName)
 				} else {
-					device, err := adapter.Connect(resutl.Address, bleConnectionParams)
+
+					device, err := ble.adapter.Connect(resutl.Address, bleConnectionParams)
 
 					if err != nil {
 						log.Printf("Failed to connect to device: %s (%s)\n", resutl.LocalName(), resutl.Address.String())
@@ -72,16 +75,13 @@ func (ble *BLE) scan(ctx context.Context, newDevices chan *Result) error {
 		}
 	}(ctx, newDevices, ble)
 
-	for {
-		select {
-		case <-ctx.Done(): // Listen for cancel signal
-			if err := ble.adapter.StopScan(); err != nil {
-				return fmt.Errorf("bluetooth adapter failed to stop scan: %w", err)
-			}
-			time.Sleep(100 * time.Millisecond)
-			return nil
-		}
+	<-ctx.Done()
+	if err := ble.adapter.StopScan(); err != nil {
+		return fmt.Errorf("bluetooth adapter failed to stop scan: %w", err)
 	}
+	time.Sleep(100 * time.Millisecond)
+	return nil
+
 }
 
 func (ble *BLE) Reconnect(address bluetooth.Address) (bluetooth.Device, error) {

@@ -41,8 +41,6 @@ func (ble *BLE) UnpairedDevices() ([]*Result, error) {
 	return result, nil
 }
 func (ble *BLE) Device(name string) *Result {
-	ble.mu.Lock()
-	defer ble.mu.Unlock()
 	for _, d := range ble.foundDevices {
 		if d.Name == name {
 			return d

@@ -1,8 +1,6 @@
 module github.com/shell-car-remote
 
-go 1.23.0
-
-toolchain go1.23.4
+go 1.24.5
 
 require (
 	github.com/gvalkov/golang-evdev v0.0.0-20220815104727-7e27d6ce89b6

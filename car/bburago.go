@@ -22,7 +22,7 @@ func (f BburagoFactory) GetCipher() service.Cipher {
 
 func (f BburagoFactory) GetBatteryNotificationHandler(carName string) BatteryNotificationHandler {
 	return func(input []byte) {
-		fmt.Printf("%s: %x%%\n", carName, input[0])
+		fmt.Printf("%s: %d%%\n", carName, input[0])
 	}
 }
 
@@ -53,7 +53,7 @@ func GetInitialStatus() *BBStatus {
 			0x00, //[3] left
 			0x00, //[4] rigth
 			0x00, //[5] ligths
-			0x00, //[6] turbo
+			0x01, //[6] turbo
 			0x00, //[7] always zero
 		},
 	}
@@ -92,7 +92,7 @@ func (m BBStatus) Turbo() {
 }
 
 func (m BBStatus) Normal() {
-	(*m.payload)[6] = One
+	(*m.payload)[6] = Zero
 }
 
 func (m BBStatus) Ligths() {
